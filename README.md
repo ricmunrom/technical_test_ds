@@ -16,7 +16,7 @@ El código debe seguir buenas prácticas de desarrollo, priorizando la **modular
 
 Para gestionar la cuenta del cliente, se deberá utilizar un dataclass, obteniendo los datos de las cuentas desde el siguiente endpoint REST:
 
-🔗 https://my-json-server.typicode.com/Ek-Adan/fake_account_api/accounts
+[https://my-json-server.typicode.com/latai-labs/fake_account_api_tech_test/accounts]
 
 ```python
 @dataclass
