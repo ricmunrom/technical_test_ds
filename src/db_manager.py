@@ -84,58 +84,65 @@ class DBManager:
     def save_clusters_to_db(self, df: pd.DataFrame, account_id: str) -> bool:
         """
         Guarda los resultados del clustering en una nueva tabla 'clusters'.
-        
         Args:
             df: DataFrame con los datos y etiquetas de cluster
             account_id: ID de la cuenta analizada
-            
         Returns:
             True si se guardaron correctamente, False en caso contrario
         """
         if 'cluster' not in df.columns or df.empty:
             print("No hay datos de clustering para guardar")
             return False
-            
         try:
             conn = self.get_connection()
             cursor = conn.cursor()
-            
             # Verificar si la tabla ya existe y crearla si no
             cursor.execute("""
-            CREATE TABLE IF NOT EXISTS clusters (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                account_id TEXT,
-                search_term TEXT,
-                cluster_id INTEGER,
-                cluster_name TEXT
-            )
+                CREATE TABLE IF NOT EXISTS clusters (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    account_id TEXT,
+                    search_term TEXT,
+                    impressions INTEGER,
+                    conversions REAL,
+                    cost REAL,
+                    cost_per_impression REAL,
+                    cluster_id INTEGER,
+                    cluster_name TEXT
+                )
             """)
-            
             # Preparar datos para inserción
             data_to_insert = []
-            
             # Extraer campos relevantes
             for _, row in df.iterrows():
                 data_to_insert.append((
                     account_id,
                     row['search_term'],
+                    int(row['impressions']) if 'impressions' in df.columns else 0,
+                    float(row['conversions']) if 'conversions' in df.columns else 0.0,
+                    float(row['cost']) if 'cost' in df.columns else 0.0,
+                    float(row['cost_per_impression']) if 'cost_per_impression' in df.columns else 0.0,
                     int(row['cluster']),
                     row['cluster_name'] if 'cluster_name' in df.columns else f"Cluster {row['cluster']}"
                 ))
-            
             # Insertar datos
             cursor.executemany("""
-            INSERT INTO clusters (account_id, search_term, cluster_id, cluster_name)
-            VALUES (?, ?, ?, ?)
+                INSERT INTO clusters (
+                    account_id, 
+                    search_term, 
+                    impressions,
+                    conversions,
+                    cost,
+                    cost_per_impression,
+                    cluster_id, 
+                    cluster_name
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             """, data_to_insert)
-            
             # Guardar cambios
             conn.commit()
             conn.close()
-            
             print(f"Se guardaron {len(data_to_insert)} registros en la tabla 'clusters'")
             return True
-            
         except Exception as e:
             print(f"Error al guardar clusters en la base de datos: {str(e)}")
             return False

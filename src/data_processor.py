@@ -199,7 +199,7 @@ class DataProcessor:
             tfidf_matrix = tfidf.fit_transform(self.df['search_term_clean'])
             
             # Reducir dimensionalidad con PCA para TF-IDF
-            pca_text = PCA(n_components=40, random_state=42)
+            pca_text = PCA(n_components=optimal_components, random_state=42)
             text_features_reduced = pca_text.fit_transform(tfidf_matrix.toarray())
             print(f"Varianza explicada por los componentes de PCA con TF-IDF: {np.sum(pca_text.explained_variance_ratio_):.2f}")
         
